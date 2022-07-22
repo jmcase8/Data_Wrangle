@@ -1,2 +1,2 @@
 *.ipynb
-__*__
+__pycache__
