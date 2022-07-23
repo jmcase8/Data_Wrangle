@@ -3,3 +3,5 @@ Packages Required:
 2. Requests
 3. Validators 
 4. openpyxl - if user wants to access ['.xls', '.xlsx', '.xlsm', '.xlsb', '.odf', '.ods','.odt'] files
+5. pytest
+5. mypy

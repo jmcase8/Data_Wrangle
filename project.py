@@ -8,7 +8,6 @@ import requests
 import pathlib
 import zipfile
 import argparse
-from tomlkit import string
 import validators
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -103,6 +102,13 @@ def comp_check(df: pd.DataFrame) -> None:
     Checks for completeness of data. This is checking to see if there is any values in the columns or in
     the rows that are missing. Columns/Rows with missing data are written to a separate file. 
     """
+    #creates empty file if it does not exist
+    try:
+        with open(pathlib.PurePath(args.data).with_suffix("").name + ("_results.txt"), 'x'):
+            pass
+    except FileExistsError:
+        pass
+
     for i, col in zip(df.isnull().sum(), df.columns):
         # checking each column for null
         if i != 0:
@@ -126,6 +132,12 @@ def consis_check(df: pd.DataFrame) -> None:
     Checks each column for their type. If type is "O" it is an object in pandas which means it can possibly be
     a mixutre of data types. 
     """
+    #creates empty file if it does not exist
+    try:
+        with open(pathlib.PurePath(args.data).with_suffix("").name + ("_results.txt"), 'x'):
+            pass
+    except FileExistsError:
+        pass
     for col in df.columns:
         if df[col].dtypes == "O":
             with open(pathlib.PurePath(args.data).with_suffix("").name + ("_results.txt"), "a+") as f:
