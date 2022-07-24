@@ -1,6 +1,7 @@
 """This module is a data wrangling and basic completeness/consistency checker.
 Only '.zip' is supported for compressed files. 
-The following are supported file types:'.xls', '.xlsx', '.xlsm', '.xlsb', '.odf', '.ods','.odt', '.txt', '.data', '.csv', '.dat', '.tsv'
+The following are supported file types:'.xls', '.xlsx', '.xlsm', '.xlsb',
+'.odf', '.ods','.odt', '.txt', '.data', '.csv', '.dat', '.tsv'
 """
 import pandas as pd
 import sys
@@ -9,21 +10,38 @@ import pathlib
 import zipfile
 import argparse
 import validators
+import csv
+
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument("data", help="Url or Path to data")
+parser.add_argument('-s', '--sep', metavar='sep', default=None, help='Separator for data. Default will try to find separator with csv.sniffer')
 #parser.add_argument("-c", "--columns", nargs="*", help="List of headers for data") #writing out the column names is tedious
 #headers could be included witha true or false flag
 args = parser.parse_args()
+
+#detect if user has valid separator; can also be used to override detected separators
+with open(args.data) as csvfile:
+    line = csvfile.readline()
+    dialect = csv.Sniffer().sniff(line)
+if dialect.delimiter != args.sep:
+    user_response = input('Selected separator does not match file separator. Press 1 to coninue, 0 to quit: ')
+    if user_response == '0':
+        raise ValueError('Selected separator does not match file separator')
+    elif user_response == '1':
+        pass
+    else:
+        sys.exit('No valid response detected')
+
+#use to determine if file local or external
 if validators.url(args.data):
     location = "external"
 else:
     location = "local"
 
 def main():
-    """Main function called when running script.
+    """Main function called when running script. Will either branch local or external"""
 
-    """
     try:
         if location == "local":
             df = get_data(path=args.data)
@@ -44,17 +62,19 @@ def get_data(url=None, path=None):
 
     """
     try:
+        if path != None and url != None:
+            sys.exit("Enter either a path or url")
         #executes for local files
-        if path != None:
-            if pathlib.PurePath(path).suffix.lower() == ".zip": # unpack to directory of same name
+        elif path != None:
+            if pathlib.Path(path).suffix.lower() == ".zip": # unpack to directory of same name
                 with zipfile.ZipFile(pathlib.PurePath(path).name, "r") as zip_ref:
                     zip_ref.extractall(pathlib.Path(path).with_suffix("").name)
                     sys.exit("Data successfully downloaded. Use local path to look at data.")
             elif pathlib.PurePath(path).suffix.lower() in ['.xls', '.xlsx', '.xlsm', '.xlsb', '.odf', '.ods','.odt']:
                 data = pd.read_excel(path) #depends on openpyxl
                 return data
-            elif pathlib.PurePath(path).suffix.lower() in [".txt", ".data", ".csv", ".dat"]:
-                data = pd.read_csv(path, header=None)
+            elif pathlib.PurePath(path).suffix.lower() in [".txt", ".data", ".csv", ".dat", ".tsv"]:
+                data = pd.read_csv(path, header=None, sep=args.sep, engine='python')
                 return data
             else:
                 sys.exit('Please enter a supported file type.')
@@ -79,15 +99,15 @@ def get_data(url=None, path=None):
                     with open(pathlib.PurePath(url).name, "ab+") as fd:
                         for chunk in r.iter_content(chunk_size=128):
                             fd.write(chunk)
-                    data = pd.read_csv(pathlib.PurePath(url).name, header=None, index_col=False)
+                    data = pd.read_csv(pathlib.PurePath(url).name, header=None, index_col=False, sep=args.sep, engine='python')
                     return data
                 elif pathlib.PurePath(path).suffix.lower() in ['.xls', '.xlsx', '.xlsm', '.xlsb', '.odf', '.ods','.odt']:
                     data = pd.read_excel(path) #depends on openpyxl
                     return data
-                    
-                    return data
-        elif path != None and url != None:
-            sys.exit("Enter either a path or url")
+                else:
+                    sys.exit('Please enter a supported file type.')
+
+        
         else:
             sys.exit("No path or url provided")
 

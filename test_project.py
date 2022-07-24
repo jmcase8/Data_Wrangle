@@ -1,9 +1,8 @@
-from webbrowser import get
 from project import get_data, comp_check, consis_check
-import pytest
 import pathlib
 import pandas as pd
 import shutil
+import pytest
 
 def test_get_data():
     #test downloading a file from a url
@@ -12,16 +11,19 @@ def test_get_data():
     assert isinstance(data, pd.DataFrame) == True
     if pathlib.Path('iris.data').exists():
         pathlib.Path.unlink(pathlib.Path('iris.data'))
+
     #test downloading a zip from a url, and unzipping it
     with pytest.raises(SystemExit) as e:
         data = get_data(url='https://archive.ics.uci.edu/ml/machine-learning-databases/00602/DryBeanDataset.zip')
     assert e.type == SystemExit
+    assert e.value.code == "Data successfully downloaded. Use local path to look at data."
     assert pathlib.Path('DryBeanDataset.zip').exists()  == True
     assert pathlib.Path('DryBeanDataset/DryBeanDataset/Dry_Bean_Dataset.xlsx').is_file() == True
     if pathlib.Path('DryBeanDataset').exists():
         shutil.rmtree('DryBeanDataset')
     if pathlib.Path('DryBeanDataset.zip').exists():
         pathlib.Path.unlink(pathlib.Path('DryBeanDataset.zip'))
+
     #test opening local path
     with pytest.raises(SystemExit) as e:
         get_data(path='blah.txt')    
@@ -33,7 +35,28 @@ def test_get_data():
         get_data(path='test_files/test.unk')   
     assert e.type == SystemExit
     assert e.value.code == 'Please enter a supported file type.'
-    
+
+    #test local unzip
+    with pytest.raises(SystemExit) as e:
+        data = get_data(path='test.zip')
+    assert e.type == SystemExit
+    assert e.value.code == "Data successfully downloaded. Use local path to look at data."
+    assert pathlib.Path('test/DryBeanDataset/Dry_Bean_Dataset.xlsx').is_file() == True
+    if pathlib.Path('test').exists():
+        shutil.rmtree('test')
+
+    #test for path and url
+    with pytest.raises(SystemExit) as e:
+        get_data(path='blah.txt', url='http://google.com')
+    assert e.type == SystemExit
+    assert e.value.code == "Enter either a path or url"
+    #test for nothing
+
+    with pytest.raises(SystemExit) as e:
+        get_data()
+    assert e.type == SystemExit
+    assert e.value.code == "No path or url provided"
+
 def test_com_check():
     comp_check(get_data(path='test_files/test.data'))
     assert pathlib.Path('test_project_results.txt').exists() == True
@@ -45,6 +68,7 @@ def test_com_check():
     assert lines[3] == 'Row 21 has 1 null\n'
     if pathlib.Path('test_project_results.txt').exists():
         pathlib.Path.unlink(pathlib.Path('test_project_results.txt'))
+
 def test_consis_check():
     consis_check(get_data(path='test_files/test.data'))
     assert pathlib.Path('test_project_results.txt').exists() == True
