@@ -21,17 +21,18 @@ parser.add_argument('-s', '--sep', metavar='sep', default=None, help='Separator 
 args = parser.parse_args()
 
 #detect if user has valid separator; can also be used to override detected separators
-with open(args.data) as csvfile:
-    line = csvfile.readline()
-    dialect = csv.Sniffer().sniff(line)
-if dialect.delimiter != args.sep:
-    user_response = input('Selected separator does not match file separator. Press 1 to coninue, 0 to quit: ')
-    if user_response == '0':
-        raise ValueError('Selected separator does not match file separator')
-    elif user_response == '1':
-        pass
-    else:
-        sys.exit('No valid response detected')
+if args.sep != None:
+    with open(args.data) as csvfile:
+        line = csvfile.readline()
+        dialect = csv.Sniffer().sniff(line)
+    if dialect.delimiter != args.sep:
+        user_response = input('Selected separator does not match file separator. Press 1 to coninue, 0 to quit: ')
+        if user_response == '0':
+            raise ValueError('Selected separator does not match file separator')
+        elif user_response == '1':
+            pass
+        else:
+            sys.exit('No valid response detected')
 
 #use to determine if file local or external
 if validators.url(args.data):
