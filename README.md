@@ -1,7 +1,4 @@
 # Data Wrangling
-
-### by: James Case
-### Colorado Springs, CO, USA
 #### Video Demo: https://youtu.be/7IU_iOeRwKw
 
 
