@@ -1,12 +1,6 @@
 # Data Wrangling
 #### Video Demo: https://youtu.be/7IU_iOeRwKw
 
-
-
-## Purpose
----
-The project started off as a way to learn more about module creation/testing/implementation, utilize a version contorl system (VCS; I used git), utilize python virtual environment (venv) for packaging and requirements, use I/O effectively, and handle various exceptions. Overall, the utility of the module began to grow and now it can be used by anyone desiring a quick and efficient way to gather data and assess data. 
-
 ## Files
 ---
 
